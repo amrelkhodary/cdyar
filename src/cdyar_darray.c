@@ -4,58 +4,93 @@
 #include <stdlib.h>
 #include <string.h>
 
+/*
+    internal function
+    check if the flag passed to cdyar_narr is valid combination of binary flags
+    args: 1) const cdyar_flags flags: the flag
+    returns: (type: cdyar_bool) a boolean indicating whether the flag is valid
+   or not
+*/
 static cdyar_bool areFlagsValid(const cdyar_flag flags) {
-    //TODO: implement function
-    return cdyar_true;
+  // TODO: implement function
+
+  return cdyar_true;
+}
+
+/*
+    internal function (type: resizepolicy)
+    default resize policy provided by cdyar for the dynamic array data type. It
+   performs a 2x resize if the index out of bounds is within 2x of the current
+   range.
+
+    argss: 1) cdyar_darray* arr     : a pointer to the dynamic array
+           2) const size_t index    : the index the user tried to insert in
+           3) cdyar_returncode* code: a pointer to a returncode variable to
+   store status returns: void
+*/
+static void cdyar_default_resize_policy(cdyar_darray *arr, const size_t index,
+                                        cdyar_returncode *code) {
+  // don't forget to update arr->length after resize!
+  // dont't forget to update code!
 }
 
 /*
     allocate memory for a new dynamic array
-    args: 1) const size_t typesize  : the size of the type to be stored in the array
-          2) const size_t length    : how many elements in the array
-          3) const cdyar_flag flags : binary flags passed
-          4) cdyar_returncode *code : pointer to a returncode variable to report an error (if any)
+    args: 1) const size_t typesize  : the size of the type to be stored in the
+   array 2) const size_t length    : how many elements in the array 3) const
+   cdyar_flag flags : binary flags passed 4) cdyar_returncode *code : pointer to
+   a returncode variable to report an error (if any)
 
-    returns: (type: cdyar_darray*) a pointer to the newly created dynamic array structure
+    returns: (type: cdyar_darray*) a pointer to the newly created dynamic array
+   structure
 */
 cdyar_darray *cdyar_narr(const size_t typesize, const size_t length,
+                         const cdyar_resizepolicy policy,
+                         const cdyar_typehandler handler,
                          const cdyar_flag flags, cdyar_returncode *code) {
 
-  //make sure code is not null
+  // make sure code is not null
   CDYAR_CHECK_CODE(code);
 
-  //make sure length passed is positive
-  if(length == 0) {
-      *code=CDYAR_INVALID_INPUT;
-      return NULL;
+  // make sure length passed is positive
+  if (length == 0) {
+    *code = CDYAR_INVALID_INPUT;
+    return NULL;
   }
 
-  //make sure typesize if a valid size
-  if(typesize == 0) {
-     *code=CDYAR_INVALID_INPUT;
-     return NULL;
+  // make sure typesize if a valid size
+  if (typesize == 0) {
+    *code = CDYAR_INVALID_INPUT;
+    return NULL;
   }
 
-  //make sure there is no overflow
-  if(length > SIZE_MAX / typesize) {
-      *code=CDYAR_INVALID_INPUT;
-      return NULL;
+  // make sure there is no overflow
+  if (length > SIZE_MAX / typesize) {
+    *code = CDYAR_INVALID_INPUT;
+    return NULL;
   }
 
-  //make sure the flags are valid
-  if(!areFlagsValid(flags)) {
-     *code=CDYAR_INVALID_INPUT;
-     return NULL;
+  // make sure the flags are valid
+  if (!areFlagsValid(flags)) {
+    *code = CDYAR_INVALID_INPUT;
+    return NULL;
   }
 
-  //allocate memory for the new dynamic array structure
+  // make sure handler is not null
+  if (!handler) {
+    *code = CDYAR_INVALID_INPUT;
+    return NULL;
+  }
+
+  // allocate memory for the new dynamic array structure
   cdyar_darray *narr = (cdyar_darray *)malloc(sizeof(cdyar_darray));
   if (!narr) {
     *code = CDYAR_MEMORY_ERROR;
     return NULL;
   }
 
-  //allocate memory for the new elements array inside the dyanmic array structure
+  // allocate memory for the new elements array inside the dyanmic array
+  // structure
   narr->elements = malloc(length * typesize);
   if (!narr->elements) {
     *code = CDYAR_MEMORY_ERROR;
@@ -63,40 +98,123 @@ cdyar_darray *cdyar_narr(const size_t typesize, const size_t length,
     return NULL;
   }
 
-  //zero out all the elements inside the inner array
-  memset(narr->elements, 0, length*typesize);
+  // zero out all the elements inside the inner array
+  memset(narr->elements, 0, length * typesize);
 
-  //set properties
+  // set properties
   narr->length = length;
   narr->typesize = typesize;
   narr->flags = flags;
-  *code = CDYAR_SUCCESSFUL;
 
+  // assign resize policy
+  if (policy == CDYAR_DEFAULT_RESIZE_POLICY) {
+    narr->policy = cdyar_default_resize_policy;
+  } else {
+    narr->policy = policy;
+  }
+
+  // assign type handler
+  narr->handler = handler;
+
+  *code = CDYAR_SUCCESSFUL;
   return narr;
 }
 
 /*
     free allocated memory for a dynamic array
     args: 1) cdyar_darray* arr     : the dyanmic array in question
-          2) cdyar_returncode* code: a pointer to a returncode variable to report any error (if any)
+          2) cdyar_returncode* code: a pointer to a returncode variable to
+   report any error (if any) returns: void
+*/
+void cdyar_darr(cdyar_darray *arr, cdyar_returncode *code) {
+  // make sure code is not null
+  CDYAR_CHECK_CODE(code);
+
+  // make sure arr is not null
+  if (!arr) {
+    *code = CDYAR_INVALID_INPUT;
+    return;
+  }
+
+  // if the inner array exists, free it
+  if (arr->elements) {
+    free(arr->elements);
+  }
+
+  // free the dynamic array
+  free(arr);
+  *code = CDYAR_SUCCESSFUL;
+}
+
+/*
+    safely set an element at a particular index in a daynamic array to a value
+    args: 1) cdyar_darray* arr     : a pointer to the dynamic array
+          2) const size_t index    : the index of the element
+          3) void *valueptr        : a pointer to a variable that holds the new
+   value to be stored in the element 4) cdyar_returncode* code: a pointer to a
+   cdyar_returncode variable to store whether the function was successful or not
     returns: void
 */
-void cdyar_darr(cdyar_darray *arr, cdyar_returncode* code) {
-    //make sure code is not null
-    CDYAR_CHECK_CODE(code);
+void cdyar_set(cdyar_darray *arr, const size_t index, void *valueptr,
+               cdyar_returncode *code) {
+  // check that code is not null
+  CDYAR_CHECK_CODE(code);
 
-    //make sure arr is not null
-    if(!arr) {
-       *code=CDYAR_INVALID_INPUT;
-       return;
-    }
+  // check that arr is not null
+  if (!arr) {
+    *code = CDYAR_INVALID_INPUT;
+    return;
+  }
 
-    //if the inner array exists, free it
-    if(arr->elements) {
-        free(arr->elements);
-    }
+  // check that valueptr is not null
+  if (!valueptr) {
+    *code = CDYAR_INVALID_INPUT;
+    return;
+  }
 
-    //free the dynamic array
-    free(arr);
-    *code=CDYAR_SUCCESSFUL;
+  // bounds checking
+  if (index < 0 || index >= arr->length) {
+    *code = CDYAR_ARR_OUT_OF_BOUNDS;
+
+    // invoke the dyanmic array's resize policy
+    arr->policy(arr, index, code);
+  }
+
+  // perform set operation if index is within bounds or a if the array was
+  // successfully resized
+  if (*code != CDYAR_ARR_OUT_OF_BOUNDS) {
+    // use a typehandler to perform this type of operation operation
+    //((CUSTOM_TYPE*)arr->elements)[index] = *((CUSTOM_TYPE*)valueptr);
+    arr->handler(arr, index, valueptr);
+    *code = CDYAR_SUCCESSFUL;
+    return;
+  }
+}
+
+void cdyar_get(cdyar_darray *arr, const size_t index, void *outptr,
+               cdyar_returncode *code) {
+  // check code is not null
+  CDYAR_CHECK_CODE(code);
+
+  // check arr is not null
+  if (!arr) {
+    *code = CDYAR_INVALID_INPUT;
+    return;
+  }
+
+  //check *outptr is not null
+  if(!outptr) {
+      *code = CDYAR_INVALID_INPUT;
+      return;
+  }
+
+  //bounds checking
+  if(index < 0 || index >= arr->length) {
+      *code = CDYAR_ARR_OUT_OF_BOUNDS;
+      return;
+  }
+
+  //assign outptr to a pointer to the element in question in the array
+  outptr = (arr->elements) + index;
+  *code = CDYAR_SUCCESSFUL;
 }

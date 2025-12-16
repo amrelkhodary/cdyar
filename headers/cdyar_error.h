@@ -20,6 +20,7 @@
         CDYAR_FAILED, //generic failed return code, use it only when abs. neccessary
         CDYAR_MEMORY_ERROR,
         CDYAR_INVALID_INPUT,
+        CDYAR_ARR_OUT_OF_BOUNDS,
 
     };
 

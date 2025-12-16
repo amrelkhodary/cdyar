@@ -16,15 +16,28 @@ OBJECTS = $(BIN_DIR)/cdyar_darray.o
 LIB_NAME = libcdyar.a
 LIB_PATH = $(BIN_DIR)/$(LIB_NAME)
 
+# Executable
+EXEC_NAME = cdyar
+EXEC_PATH = $(BIN_DIR)/$(EXEC_NAME)
+MAIN_OBJ = $(BIN_DIR)/main.o
+
 # Default target
-all: $(LIB_PATH)
+all: $(LIB_PATH) $(EXEC_PATH)
 
 # Build static library
 $(LIB_PATH): $(OBJECTS)
 	ar rcs $@ $^
 
+# Build executable
+$(EXEC_PATH): $(MAIN_OBJ) $(LIB_PATH)
+	$(CC) $(CFLAGS) $(DEBUG_FLAGS) $< -L$(BIN_DIR) -lcdyar -o $@
+
 # Compile source files
 $(BIN_DIR)/cdyar_darray.o: $(SRC_DIR)/cdyar_darray.c $(HEADER_DIR)/cdyar_darray.h $(HEADER_DIR)/cdyar_structures.h $(HEADER_DIR)/cdyar_error.h | $(BIN_DIR)
+	$(CC) $(CFLAGS) $(DEBUG_FLAGS) -c $< -o $@
+
+# Compile main.c
+$(MAIN_OBJ): $(SRC_DIR)/main.c $(HEADER_DIR)/cdyar_darray.h $(HEADER_DIR)/cdyar_structures.h $(HEADER_DIR)/cdyar_error.h | $(BIN_DIR)
 	$(CC) $(CFLAGS) $(DEBUG_FLAGS) -c $< -o $@
 
 # Create bin directory if it doesn't exist
@@ -41,7 +54,7 @@ release: clean all
 
 # Clean build artifacts
 clean:
-	rm -f $(BIN_DIR)/*.o $(BIN_DIR)/*.a
+	rm -f $(BIN_DIR)/*.o $(BIN_DIR)/*.a $(BIN_DIR)/$(EXEC_NAME)
 
 # Clean everything including directory
 distclean: clean
