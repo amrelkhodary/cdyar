@@ -89,7 +89,7 @@ cdyar_darray *cdyar_narr(const size_t typesize, const size_t length,
     return NULL;
   }
 
-  // allocate memory for the new elements array inside the dyanmic array
+  // allocate memory for the new elements array inside the dynamic array
   // structure
   narr->elements = malloc(length * typesize);
   if (!narr->elements) {
@@ -122,7 +122,7 @@ cdyar_darray *cdyar_narr(const size_t typesize, const size_t length,
 
 /*
     free allocated memory for a dynamic array
-    args: 1) cdyar_darray* arr     : the dyanmic array in question
+    args: 1) cdyar_darray* arr     : the dynamic array in question
           2) cdyar_returncode* code: a pointer to a returncode variable to
    report any error (if any) returns: void
 */
@@ -147,7 +147,7 @@ void cdyar_darr(cdyar_darray *arr, cdyar_returncode *code) {
 }
 
 /*
-    safely set an element at a particular index in a daynamic array to a value
+    safely set an element at a particular index in a dynamic array to a value
     args: 1) cdyar_darray* arr     : a pointer to the dynamic array
           2) const size_t index    : the index of the element
           3) void *valueptr        : a pointer to a variable that holds the new
@@ -172,26 +172,56 @@ void cdyar_set(cdyar_darray *arr, const size_t index, void *valueptr,
     return;
   }
 
+  // check that typesize is not zero
+  if (arr->typesize == 0) {
+    *code = CDYAR_INVALID_INPUT;
+    return;
+  }
+
+  // check for typesize overflow
+  if (index > SIZE_MAX / arr->typesize) {
+    *code = CDYAR_INVALID_INPUT;
+    return;
+  }
+
+  // check that an elements array actually exists within the dynamic array
+  if (!arr->elements) {
+    *code = CDYAR_INVALID_INPUT;
+    return;
+  }
+
+  // make sure a resize policy for the dynamic array exists
+  if (!arr->policy) {
+    *code = CDYAR_INVALID_INPUT;
+    return;
+  }
+
+  // make sure a type handler for the dynamic array exists
+  if (!arr->handler) {
+    *code = CDYAR_INVALID_INPUT;
+    return;
+  }
+
   // bounds checking
-  if (index < 0 || index >= arr->length) {
+  if (index >= arr->length) {
     *code = CDYAR_ARR_OUT_OF_BOUNDS;
 
-    // invoke the dyanmic array's resize policy
+    // invoke the dynamic array's resize policy
     arr->policy(arr, index, code);
   }
 
   // perform set operation if index is within bounds or a if the array was
   // successfully resized
-  if (*code != CDYAR_ARR_OUT_OF_BOUNDS) {
+  if (*code == CDYAR_SUCCESSFUL) {
     // use a typehandler to perform this type of operation operation
     //((CUSTOM_TYPE*)arr->elements)[index] = *((CUSTOM_TYPE*)valueptr);
-    arr->handler(arr, index, valueptr);
-    *code = CDYAR_SUCCESSFUL;
-    return;
+    // void ptr casted to char* to suppress compiler warnings
+    arr->handler(((char*)(arr->elements)) + (arr->typesize * index), valueptr,
+                 CDYAR_DIRECTION_ASSIGN_RIGHT_TO_LEFT, code);
   }
 }
 
-void cdyar_get(cdyar_darray *arr, const size_t index, void *outptr,
+void cdyar_get(const cdyar_darray *arr, const size_t index, void *outptr,
                cdyar_returncode *code) {
   // check code is not null
   CDYAR_CHECK_CODE(code);
@@ -202,19 +232,47 @@ void cdyar_get(cdyar_darray *arr, const size_t index, void *outptr,
     return;
   }
 
-  //check *outptr is not null
-  if(!outptr) {
-      *code = CDYAR_INVALID_INPUT;
-      return;
+  // check *outptr is not null
+  if (!outptr) {
+    *code = CDYAR_INVALID_INPUT;
+    return;
   }
 
-  //bounds checking
-  if(index < 0 || index >= arr->length) {
-      *code = CDYAR_ARR_OUT_OF_BOUNDS;
-      return;
+  // check that the typesize is not zero
+  if (arr->typesize == 0) {
+    *code = CDYAR_INVALID_INPUT;
+    return;
   }
 
-  //assign outptr to a pointer to the element in question in the array
-  outptr = (arr->elements) + index;
-  *code = CDYAR_SUCCESSFUL;
+  // chcek for typesize overflow
+  if (index > SIZE_MAX / arr->typesize) {
+    *code = CDYAR_INVALID_INPUT;
+    return;
+  }
+
+  // check that an elements array actually exists within the static array
+  if (!arr->elements) {
+    *code = CDYAR_INVALID_INPUT;
+    return;
+  }
+
+  // check that there is a handler function in the dynamic array
+  if (!arr->handler) {
+    *code = CDYAR_INVALID_INPUT;
+    return;
+  }
+
+  // bounds checking
+  if (index >= arr->length) {
+    *code = CDYAR_ARR_OUT_OF_BOUNDS;
+    return;
+  }
+
+  // assign outptr to a pointer to the element in question in the array
+  // void ptr converted to char* to suppress compiler warnings
+  arr->handler(((char*)(arr->elements)) + (arr->typesize * index), outptr,
+               CDYAR_DIRECTION_ASSIGN_LEFT_TO_RIGHT, code);
+
+  /**code=CDYAR_SUCCESSFUL*/ // uneccessary since handler will determine code
+                             // anyways + it could hide handler failure`
 }

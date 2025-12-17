@@ -4,7 +4,11 @@
 
 #include "./cdyar_error.h" //to be able to use cdyar_returncode type + to access error return codes
 #include "./cdyar_structures.h" //for cdyar_flag
+#include "./cdyar_types.h"
 #include <stdlib.h>             //to be able to use size_t
+
+//resize policy function type
+typedef void (*cdyar_resizepolicy)(struct cdyar_darray* arr, const size_t index, cdyar_returncode* code);
 
 // dynamic array type
 typedef struct cdyar_darray {
@@ -28,6 +32,6 @@ void cdyar_darr(cdyar_darray *arr, cdyar_returncode *code);
 void cdyar_set(cdyar_darray *arr, const size_t index, void *valueptr,
                cdyar_returncode
                    *code); // used void* for value because the type is not known
-void cdyar_get(cdyar_darray *arr, const size_t index, void *outptr,
+void cdyar_get(const cdyar_darray *arr, const size_t index, void *outptr,
                cdyar_returncode *code);
 #endif

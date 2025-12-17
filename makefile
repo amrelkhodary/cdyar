@@ -9,8 +9,8 @@ BIN_DIR = ./bin
 HEADER_DIR = ./headers
 
 # Source files
-SOURCES = $(SRC_DIR)/cdyar_darray.c
-OBJECTS = $(BIN_DIR)/cdyar_darray.o
+SOURCES = $(SRC_DIR)/cdyar_darray.c $(SRC_DIR)/cdyar_types.c
+OBJECTS = $(BIN_DIR)/cdyar_darray.o $(BIN_DIR)/cdyar_types.o
 
 # Output library (static)
 LIB_NAME = libcdyar.a
@@ -33,11 +33,14 @@ $(EXEC_PATH): $(MAIN_OBJ) $(LIB_PATH)
 	$(CC) $(CFLAGS) $(DEBUG_FLAGS) $< -L$(BIN_DIR) -lcdyar -o $@
 
 # Compile source files
-$(BIN_DIR)/cdyar_darray.o: $(SRC_DIR)/cdyar_darray.c $(HEADER_DIR)/cdyar_darray.h $(HEADER_DIR)/cdyar_structures.h $(HEADER_DIR)/cdyar_error.h | $(BIN_DIR)
+$(BIN_DIR)/cdyar_darray.o: $(SRC_DIR)/cdyar_darray.c $(HEADER_DIR)/cdyar_darray.h $(HEADER_DIR)/cdyar_structures.h $(HEADER_DIR)/cdyar_error.h $(HEADER_DIR)/cdyar_types.h | $(BIN_DIR)
+	$(CC) $(CFLAGS) $(DEBUG_FLAGS) -c $< -o $@
+
+$(BIN_DIR)/cdyar_types.o: $(SRC_DIR)/cdyar_types.c $(HEADER_DIR)/cdyar_types.h $(HEADER_DIR)/cdyar_error.h | $(BIN_DIR)
 	$(CC) $(CFLAGS) $(DEBUG_FLAGS) -c $< -o $@
 
 # Compile main.c
-$(MAIN_OBJ): $(SRC_DIR)/main.c $(HEADER_DIR)/cdyar_darray.h $(HEADER_DIR)/cdyar_structures.h $(HEADER_DIR)/cdyar_error.h | $(BIN_DIR)
+$(MAIN_OBJ): $(SRC_DIR)/main.c $(HEADER_DIR)/cdyar_darray.h $(HEADER_DIR)/cdyar_structures.h $(HEADER_DIR)/cdyar_error.h $(HEADER_DIR)/cdyar_types.h | $(BIN_DIR)
 	$(CC) $(CFLAGS) $(DEBUG_FLAGS) -c $< -o $@
 
 # Create bin directory if it doesn't exist

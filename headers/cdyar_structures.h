@@ -14,8 +14,4 @@
 
     //simple flag type
     typedef unsigned int cdyar_flag;
-
-    //function types
-    typedef void (*cdyar_resizepolicy)(struct cdyar_darray* arr, const size_t index, cdyar_returncode* code);
-    typedef void (*cdyar_typehandler)(struct cdyar_darray* arr, const size_t index, void* valvoidptr);
 #endif
