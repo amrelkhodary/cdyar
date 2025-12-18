@@ -2,7 +2,7 @@
     #define H_CDYAR_ERROR
 
     #include <stdio.h> //for fprintf in CDYAR_CHECK_CODE
-
+    #include <stdlib.h>
     //checking code is not null
     #define CDYAR_CHECK_CODE(code) \
         do { \
