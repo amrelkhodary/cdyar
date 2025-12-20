@@ -1,19 +1,18 @@
 #ifndef H_CDYAR_DARRAY
 #define H_CDYAR_DARRAY
 #define CDYAR_DEFAULT_RESIZE_POLICY NULL
+#define CDYAR_DARRAY_FLAG_COUNT 2
 
 #include "./cdyar_arithmetic.h" //for check_sizet_overflow called in cdyar_default_resize_policy
 #include "./cdyar_error.h" //to be able to use cdyar_returncode type + to access error return codes
 #include "./cdyar_structures.h" //for cdyar_flag
 #include "./cdyar_types.h"
 #include <stdlib.h> //to be able to use size_t
+#include <math.h> //for internal function
 
 //enumeration of different flags that could be passed to the dynamic array
 enum cdyar_darray_binflags {
-    CDYAR_ARR_AUTO_RESIZE = 1,  //automatically resizes the if a set operation happened outside of bounds
-    CDYAR_ARR_NO_AUTO_RESIZE = 1 << 1,  //only allows resizing the array by manually calling the resizepolicy function
-    CDYAR_ARR_ABORT_ON_FAILURE = 1 << 2, //abort on any critical failure
-    CDYAR_ARR_NO_ABORT_ON_FAILURE = 1 << 3,  //only reports a failure through a code but doesn't abort
+    CDYAR_ARR_AUTO_RESIZE = 0b1,  //automatically resizes the if a set operation happened outside of bounds
 
 };
 
