@@ -36,4 +36,8 @@ void cdyar_set(cdyar_darray *arr, const size_t index, void *valueptr,
                    *code); // used void* for value because the type is not known
 void cdyar_get(const cdyar_darray *arr, const size_t index, void *outptr,
                cdyar_returncode *code);
+
+//property setting functions
+void cdyar_setflags(cdyar_darray* arr, const cdyar_flag flags, cdyar_returncode* code);
+void cdyar_setpolicy(cdyar_darray* arr, const cdyar_resizepolicy policy, cdyar_returncode* code);
 #endif

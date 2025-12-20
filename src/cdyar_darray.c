@@ -325,3 +325,45 @@ void cdyar_get(const cdyar_darray *arr, const size_t index, void *outptr,
   /**code=CDYAR_SUCCESSFUL*/ // uneccessary since handler will determine code
                              // anyways + it could hide handler failure`
 }
+
+void cdyar_setflags(cdyar_darray *arr, const cdyar_flag flags, cdyar_returncode* code) {
+    //check code is not null
+    CDYAR_CHECK_CODE(code);
+
+    //check arr is not null
+    if(!arr) {
+        *code=CDYAR_DYNAMIC_ARR_DOES_NOT_EXIST;
+        return;
+    }
+
+    //make sure the flags are valid
+    if(!areFlagsValid(flags)) {
+        *code=CDYAR_INVALID_INPUT;
+        return;
+    }
+
+    //set arr->flags to the new value and indicate success
+    arr->flags = flags;
+    *code=CDYAR_SUCCESSFUL;
+}
+
+void cdyar_setpolicy(cdyar_darray *arr, const cdyar_resizepolicy policy, cdyar_returncode *code) {
+    //check that code is not null
+    CDYAR_CHECK_CODE(code);
+
+    //check that arr is not null
+    if(!arr) {
+        *code = CDYAR_DYNAMIC_ARR_DOES_NOT_EXIST;
+        return;
+    }
+
+    //check that policy is not null
+    if(!policy) {
+        *code = CDYAR_INVALID_INPUT;
+        return;
+    }
+
+    //assign new policy and indicate success
+    arr->policy = policy;
+    *code = CDYAR_SUCCESSFUL;
+}
