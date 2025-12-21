@@ -65,7 +65,7 @@ static void cdyar_default_resize_policy(cdyar_darray *arr, const size_t index,
   }
 
   // TODO: Check overflow
-  cdyar_check_sizet_overflow(3, code, arr->length, 2, arr->typesize);
+  cdyar_check_sizet_overflow(3, code, arr->capacity, 2, arr->typesize);
   if (*code != CDYAR_SUCCESSFUL) {
     return;
   }
@@ -73,13 +73,13 @@ static void cdyar_default_resize_policy(cdyar_darray *arr, const size_t index,
   // bounds checking
   // check that index is within the range the warrants a resize as specified by
   // this policy i.e. check that length <= index <= length * 2
-  if (!(index >= arr->length && index <= arr->length * 2)) {
+  if (!(index >= arr->capacity && index <= arr->capacity * 2)) {
     *code = CDYAR_RESIZE_POLICY_INVALID_RANGE;
     return;
   }
 
   // resize the array
-  void *elements_temp = realloc(arr->elements, arr->length * arr->typesize * 2);
+  void *elements_temp = realloc(arr->elements, arr->capacity * arr->typesize * 2);
   if (!elements_temp) {
     *code = CDYAR_MEMORY_ERROR;
     return;
@@ -87,11 +87,11 @@ static void cdyar_default_resize_policy(cdyar_darray *arr, const size_t index,
 
   // zero out the new portion of the array
   arr->elements = elements_temp;
-  memset(((char *)arr->elements) + (arr->typesize * arr->length), 0,
-         (arr->typesize * arr->length));
+  memset(((char *)arr->elements) + (arr->typesize * arr->capacity), 0,
+         (arr->typesize * arr->capacity));
 
-  // make sure to double the length
-  arr->length *= 2;
+  // make sure to double the capacity
+  arr->capacity *= 2;
   *code = CDYAR_SUCCESSFUL;
 }
 
@@ -113,7 +113,7 @@ cdyar_darray *cdyar_narr(const size_t typesize, const size_t capacity,
   // make sure code is not null
   CDYAR_CHECK_CODE(code);
 
-  // make sure length passed is positive
+  // make sure capacity passed is positive
   if (capacity == 0) {
     *code = CDYAR_INVALID_INPUT;
     return NULL;
