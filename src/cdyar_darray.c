@@ -275,7 +275,7 @@ void cdyar_set(cdyar_darray *arr, const size_t index, void *valueptr,
   }
 
   // bounds checking
-  if (index >= arr->length) {
+  if (index >= arr->capacity) {
     *code = CDYAR_ARR_OUT_OF_BOUNDS;
 
     // return if the automatic resizing is not allowed
@@ -294,6 +294,7 @@ void cdyar_set(cdyar_darray *arr, const size_t index, void *valueptr,
     // void ptr casted to char* to suppress compiler warnings
     arr->handler(((char *)(arr->elements)) + (arr->typesize * index), valueptr,
                  CDYAR_DIRECTION_ASSIGN_RIGHT_TO_LEFT, code);
+    arr->length += 1;
   }
 }
 
