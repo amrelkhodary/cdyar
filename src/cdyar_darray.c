@@ -105,7 +105,7 @@ static void cdyar_default_resize_policy(cdyar_darray *arr, const size_t index,
     returns: (type: cdyar_darray*) a pointer to the newly created dynamic array
    structure
 */
-cdyar_darray *cdyar_narr(const size_t typesize, const size_t length,
+cdyar_darray *cdyar_narr(const size_t typesize, const size_t capacity,
                          const cdyar_resizepolicy policy,
                          const cdyar_typehandler handler,
                          const cdyar_flag flags, cdyar_returncode *code) {
@@ -114,7 +114,7 @@ cdyar_darray *cdyar_narr(const size_t typesize, const size_t length,
   CDYAR_CHECK_CODE(code);
 
   // make sure length passed is positive
-  if (length == 0) {
+  if (capacity == 0) {
     *code = CDYAR_INVALID_INPUT;
     return NULL;
   }
@@ -126,7 +126,7 @@ cdyar_darray *cdyar_narr(const size_t typesize, const size_t length,
   }
 
   // make sure there is no overflow
-  if (length > SIZE_MAX / typesize) {
+  if (capacity > SIZE_MAX / typesize) {
     *code = CDYAR_INVALID_INPUT;
     return NULL;
   }
@@ -159,7 +159,7 @@ cdyar_darray *cdyar_narr(const size_t typesize, const size_t length,
 
   // allocate memory for the new elements array inside the dynamic array
   // structure
-  narr->elements = malloc(length * typesize);
+  narr->elements = malloc(capacity * typesize);
   if (!narr->elements) {
     *code = CDYAR_MEMORY_ERROR;
     free(narr);
@@ -167,12 +167,13 @@ cdyar_darray *cdyar_narr(const size_t typesize, const size_t length,
   }
 
   // zero out all the elements inside the inner array
-  memset(narr->elements, 0, length * typesize);
+  memset(narr->elements, 0, capacity * typesize);
 
   // set properties
-  narr->length = length;
+  narr->capacity = capacity;
   narr->typesize = typesize;
   narr->flags = flags;
+  narr->length = 0;
 
   // assign resize policy
   if (policy == CDYAR_DEFAULT_RESIZE_POLICY) {

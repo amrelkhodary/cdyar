@@ -23,7 +23,8 @@ typedef void (*cdyar_resizepolicy)(struct cdyar_darray *arr, const size_t index,
 // dynamic array type
 typedef struct cdyar_darray {
   void *elements;
-  size_t length;
+  size_t length; //the number of elements in the arr
+  size_t capacity; //how many elements can the array currently hold
   size_t typesize;
   cdyar_flag flags;
   cdyar_resizepolicy policy;
@@ -31,7 +32,7 @@ typedef struct cdyar_darray {
 } cdyar_darray;
 
 // functions for memory allocation and deallocation
-cdyar_darray *cdyar_narr(const size_t typesize, const size_t length,
+cdyar_darray *cdyar_narr(const size_t typesize, const size_t capacity,
                          const cdyar_resizepolicy policy,
                          const cdyar_typehandler handler,
                          const cdyar_flag flags, cdyar_returncode *code);
