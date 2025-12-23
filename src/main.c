@@ -22,6 +22,7 @@ int main() {
   size_t count = 50;
   for(size_t i = 0; i<count; i++) {
       cdyar_set(&arr, i, &s);
+      cdyar_printstatus(&arr, stderr);
   }
 
 
@@ -31,9 +32,11 @@ int main() {
   for(size_t i = 0; i<arr.capacity; i++) {
       cdyar_get(&arr, i, &nvalue);
       printf("arr[%i] = %i, %i\n", (int)i, nvalue.x, nvalue.y);
+      cdyar_printstatus(&arr, stderr);
   }
 
   cdyar_get(&arr, 80, &nvalue);
+  cdyar_printstatus(&arr, stderr);
   if(code == CDYAR_ARR_OUT_OF_BOUNDS) {
      printf("works fine.\n");
   }
