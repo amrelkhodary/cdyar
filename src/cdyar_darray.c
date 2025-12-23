@@ -157,42 +157,33 @@ cdyar_returncode cdyar_narr(const size_t typesize, const size_t capacity,
     return CDYAR_INVALID_INPUT;
   }
 
-  // allocate memory for the new dynamic array structure
-  cdyar_darray *narr = (cdyar_darray *)malloc(sizeof(cdyar_darray));
-  if (!narr) {
-    free(code);
-    return CDYAR_MEMORY_ERROR;
-  }
-
   // allocate memory for the new elements array inside the dynamic array
   // structure
-  narr->elements = malloc(capacity * typesize);
-  if (!narr->elements) {
+  outptr->elements = malloc(capacity * typesize);
+  if (!outptr->elements) {
     free(code);
-    free(narr);
     return CDYAR_MEMORY_ERROR;
   }
 
   // zero out all the elements inside the inner array
-  memset(narr->elements, 0, capacity * typesize);
+  memset(outptr->elements, 0, capacity * typesize);
 
   // set properties
-  narr->capacity = capacity;
-  narr->typesize = typesize;
-  narr->flags = flags;
-  narr->length = 0;
-  narr->code = code;
+  outptr->capacity = capacity;
+  outptr->typesize = typesize;
+  outptr->flags = flags;
+  outptr->length = 0;
+  outptr->code = code;
 
   // assign resize policy
   if (policy == CDYAR_DEFAULT_RESIZE_POLICY) {
-    narr->policy = cdyar_default_resize_policy;
+    outptr->policy = cdyar_default_resize_policy;
   } else {
-    narr->policy = policy;
+    outptr->policy = policy;
   }
 
-  // assign type handler
-  narr->handler = handler;
-
+  // assign type handler, indicate success
+  outptr->handler = handler;
   return CDYAR_SUCCESSFUL;
 }
 
@@ -202,6 +193,8 @@ cdyar_returncode cdyar_narr(const size_t typesize, const size_t capacity,
           2) cdyar_returncode* code: a pointer to a returncode variable to
    report any error (if any) returns: void
 */
+
+
 cdyar_returncode cdyar_darr(cdyar_darray *arr) {
   // make sure arr is not null
   if (!arr) {
@@ -221,11 +214,9 @@ cdyar_returncode cdyar_darr(cdyar_darray *arr) {
   cdyar_returncode tempcode = *arr->code;
   free(arr->code);
 
-  // free the dynamic array
-  free(arr);
-
   return tempcode;
 }
+
 
 /*
     safely set an element at a particular index in a dynamic array to a value
