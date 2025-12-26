@@ -51,8 +51,8 @@ release: CFLAGS += $(RELEASE_FLAGS)
 release: clean all
 
 install:
-	install -D -m 644 cdyar.h $(INCLUDEDIR)/cdyar.h
-	install -D -m 644 libcdyar.a $(LIBDIR)/libcdyar.a
+	install -D -m 644 ./headers/cdyar.h $(INCLUDEDIR)/cdyar.h
+	install -D -m 644 ./bin/libcdyar.a $(LIBDIR)/libcdyar.a
 
 uninstall:
 	rm -f $(INCLUDEDIR)/cdyar.h
