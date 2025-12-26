@@ -6,6 +6,10 @@ RELEASE_FLAGS = -O2 -DNDEBUG
 SRC_DIR = ./src
 BIN_DIR = ./bin
 HEADER_DIR = ./headers
+INSTALL_PREFIX = /usr/local
+INCLUDE_LIBDIR = ${INSTALL_PREFIX}/include
+LIBDIR = ${INSTALL_PREFIX}/lib
+
 # Source files
 SOURCES = $(SRC_DIR)/cdyar_darray.c $(SRC_DIR)/cdyar_types.c $(SRC_DIR)/cdyar_arithmetic.c $(SRC_DIR)/cdyar_error.c
 OBJECTS = $(BIN_DIR)/cdyar_darray.o $(BIN_DIR)/cdyar_types.o $(BIN_DIR)/cdyar_arithmetic.o $(BIN_DIR)/cdyar_error.o
@@ -45,6 +49,14 @@ debug: clean all
 # Release build
 release: CFLAGS += $(RELEASE_FLAGS)
 release: clean all
+
+install:
+	install -D -m 644 cdyar.h $(INCLUDEDIR)/cdyar.h
+	install -D -m 644 libcdyar.a $(LIBDIR)/libcdyar.a
+
+uninstall:
+	rm -f $(INCLUDEDIR)/cdyar.h
+	rm -f $(LIBDIR)/libcdyar.a
 # Clean build artifacts
 clean:
 	rm -f $(BIN_DIR)/*.o $(BIN_DIR)/*.a $(BIN_DIR)/$(EXEC_NAME)
